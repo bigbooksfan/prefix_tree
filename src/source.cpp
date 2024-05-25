@@ -17,7 +17,10 @@ int main() {
     tree.Add("clang");
     tree.Add("day");
     tree.Add("daydream");
+    tree.Add("monday is a day of week");
 
+    tree.Print_all();
+    return 0;
 {
     std::string request = "da";
     std::string ans = tree.Find(request);
@@ -43,6 +46,7 @@ int main() {
     Check_dict(tree, "class");
     Check_dict(tree, "clas");
     Check_dict(tree, "classi");
+    Check_dict(tree, "qwerty");
     std::cout << std::endl;
 
     return 0;
