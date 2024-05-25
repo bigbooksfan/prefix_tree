@@ -4,34 +4,32 @@
 
 Prefix_tree::Prefix_tree() {
     root = new Node;
+    stop_words = new Node;
 }
 
 Prefix_tree::~Prefix_tree() {
     delete root;
+    delete stop_words;
 }
 
 void Prefix_tree::Add(const std::string& s) {
     // check for whitespaces
-    size_t pos = s.find_first_of(" ", 0);
-    if (pos != s.npos) {
-        Add_text(s);
-        return;
+    size_t letter_pos = s.find_first_not_of(" ", 0);
+    size_t whitespace_pos = s.find_first_of(" ", letter_pos);
+
+    while (whitespace_pos != s.npos) {
+        std::string tmp = s.substr(letter_pos, whitespace_pos - letter_pos);
+        Add_word(tmp, root);
+
+        letter_pos = s.find_first_not_of(" ", whitespace_pos);
+        if (letter_pos == s.npos) break;
+        whitespace_pos = s.find_first_of(" ", letter_pos);
     }
 
-    Node* runner = root;
-    for (int i = 0; i < s.size(); ++i) {
-        char c = s[i];
-        int letter_number = c - 'a';
-        if (runner->next_nodes[letter_number] == nullptr) {
-            // create node
-            Node* tmp = new Node;
-            runner->next_nodes[letter_number] = tmp;
-            tmp->letter = c;
-        }
-        runner = runner->next_nodes[letter_number];
-        ++runner->counter;
+    if (letter_pos != s.npos) {
+        std::string tmp = s.substr(letter_pos, whitespace_pos - letter_pos);
+        Add_word(tmp, root);
     }
-    runner->is_word = true;
 }
 
 std::string Prefix_tree::Find(const std::string& s) {
@@ -39,11 +37,11 @@ std::string Prefix_tree::Find(const std::string& s) {
 
     Node* runner = root;
     for (char c : s) {
-        int letter_index = c - 'a';
-        if (runner->next_nodes[letter_index] == nullptr) {
+        size_t letter_number = (size_t)c;
+        if (runner->next_nodes[letter_number] == nullptr) {
             return "";
         }
-        runner = runner->next_nodes[letter_index];
+        runner = runner->next_nodes[letter_number];
         ret += c;
     }
 
@@ -69,29 +67,58 @@ std::string Prefix_tree::Find(const std::string& s) {
 bool Prefix_tree::Is_in_dictionary(const std::string& s) {
     Node* runner = root;
     for (char c : s) {
-        int letter_index = c - 'a';
-        if (runner->next_nodes[letter_index] == nullptr) {
+        size_t letter_number = (size_t)c;
+        if (runner->next_nodes[letter_number] == nullptr) {
             return false;
         }
-        runner = runner->next_nodes[letter_index];
+        runner = runner->next_nodes[letter_number];
     }
     return runner->is_word;
 }
 
-void Prefix_tree::Print_all() {
-    auto all_words = Get_all();
-    for (auto& s : all_words) {
-        std::cout << s << std::endl;
+void Prefix_tree::Add_stop_word(const std::string &s) {
+    // check for whitespaces
+    size_t letter_pos = s.find_first_not_of(" ", 0);
+    size_t whitespace_pos = s.find_first_of(" ", letter_pos);
+
+    while (whitespace_pos != s.npos) {
+        std::string tmp = s.substr(letter_pos, whitespace_pos - letter_pos);
+        Add_word(tmp, stop_words);
+
+        letter_pos = s.find_first_not_of(" ", whitespace_pos);
+        if (letter_pos == s.npos) break;
+        whitespace_pos = s.find_first_of(" ", letter_pos);
+    }
+
+    if (letter_pos != s.npos) {
+        std::string tmp = s.substr(letter_pos, whitespace_pos - letter_pos);
+        Add_word(tmp, stop_words);
     }
 }
 
-std::vector<std::string> Prefix_tree::Get_all() {
+void Prefix_tree::Print_all() {
+    // stop_words
+    auto all_words = Get_all(stop_words);
+    std::cout << "Stop-words: ";
+    for (auto& s : all_words) {
+        std::cout << s << " ";
+    }
+    std::cout << std::endl << "Dictionary:\n";
+
+    // words in dict
+    all_words = Get_all(root);
+    for (auto& s : all_words) {
+        std::cout << s << ";" << std::endl;
+    }
+}
+
+std::vector<std::string> Prefix_tree::Get_all(Node* r) {
     std::vector<std::string> ret;
     std::string tmp;
 
-    for (int i = 0; i < 26; ++i) {
-        if (root->next_nodes[i] != nullptr) {
-            Go_deeper(tmp, root->next_nodes[i], ret);
+    for (int i = 0; i < 256; ++i) {
+        if (r->next_nodes[i] != nullptr) {
+            Go_deeper(tmp, r->next_nodes[i], ret);
         }
     }
     return ret;
@@ -107,13 +134,26 @@ void Prefix_tree::Go_deeper(
         cont.push_back(s);
     }
     // DFS
-    for (int i = 0; i < 26; ++i) {
+    for (int i = 0; i < 256; ++i) {
         if (node->next_nodes[i] != nullptr) {
             Go_deeper(s, node->next_nodes[i], cont);
         }
     }
 }
 
-void Prefix_tree::Add_text(const std::string& s) {
-    
+void Prefix_tree::Add_word(const std::string& s, Node* r) {
+    Node* runner = r;
+    for (int i = 0; i < s.size(); ++i) {
+        char c = s[i];
+        size_t letter_number = (size_t)c;
+        if (runner->next_nodes[letter_number] == nullptr) {
+            // create node
+            Node* tmp = new Node;
+            runner->next_nodes[letter_number] = tmp;
+            tmp->letter = c;
+        }
+        runner = runner->next_nodes[letter_number];
+        ++runner->counter;
+    }
+    runner->is_word = true;
 }

@@ -12,12 +12,17 @@ void Check_dict(Prefix_tree& tree, const std::string& s) {
 int main() {
     Prefix_tree tree;
 
+    tree.Add_stop_word("a of the at in is");
+
     tree.Add("class");
+    tree.Add("Class");
     tree.Add("classic");
     tree.Add("clang");
     tree.Add("day");
     tree.Add("daydream");
     tree.Add("monday is a day of week");
+    tree.Add("    way");
+    tree.Add("  black    cat   ");
 
     tree.Print_all();
     return 0;

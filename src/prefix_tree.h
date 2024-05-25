@@ -9,20 +9,22 @@ private:
     struct Node {
         char letter;
         std::vector<Node*> next_nodes
-            = std::vector<Node*>(26, nullptr);
+            = std::vector<Node*>(256, nullptr);
         
         bool is_word = false;
         int counter = 0;
     };
 
     Node* root = nullptr;
+    Node* stop_words = nullptr;
 
-    std::vector<std::string> Get_all();
+    std::vector<std::string> Get_all(Node* r);
     void Go_deeper(
         std::string s,
         Node* node,
         std::vector<std::string>& cont);
-    void Add_text(const std::string& s);
+    
+    void Add_word(const std::string& s, Node* r);
 
 public:
     Prefix_tree();
