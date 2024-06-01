@@ -23,6 +23,7 @@ int main() {
     tree.Add("monday is a day of week");
     tree.Add("    way");
     tree.Add("  black    cat   ");
+    tree.Add("offspring");
 
     tree.Print_all();
     return 0;

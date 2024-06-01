@@ -142,7 +142,25 @@ void Prefix_tree::Go_deeper(
 }
 
 void Prefix_tree::Add_word(const std::string& s, Node* r) {
-    Node* runner = r;
+    // buferization for stop-word check
+
+    Node* runner = stop_words;
+    if (r == root) {
+        // check stop-words tree
+        bool is_stopped = false;
+        for (int i = 0; i < s.size(); ++i) {
+            char c = s[i];
+            size_t letter_number = (size_t)c;
+            if (runner->next_nodes[letter_number] == nullptr) {
+                is_stopped = true;
+                break;
+            }
+            runner = runner->next_nodes[letter_number];
+        }
+        if (is_stopped == false && runner->is_word == true) return;
+    }
+
+    runner = r;
     for (int i = 0; i < s.size(); ++i) {
         char c = s[i];
         size_t letter_number = (size_t)c;
